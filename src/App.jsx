@@ -24,7 +24,11 @@ export default function App() {
   useEffect(() => { stateRef.current = { currentUser, currentLevel, currentView } })
 
   const fetchAll = useCallback((user, level) =>
-    callApi({ action: 'getAll' }, user, level).then(data => { setAppData(data); return data })
+    callApi({ action: 'getAll' }, user, level).then(data => {
+      if (data.error) return data
+      setAppData(data)
+      return data
+    })
   , [])
 
   const api = useCallback(

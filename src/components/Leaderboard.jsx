@@ -13,9 +13,9 @@ export default function Leaderboard({ appData, onRefresh }) {
   }
 
   const wsMap = {}
-  appData.workshopScores.forEach(s => { wsMap[s.teamId] = (wsMap[s.teamId] || 0) + s.total })
+  ;(appData.workshopScores || []).forEach(s => { wsMap[s.teamId] = (wsMap[s.teamId] || 0) + s.total })
   const initMap = {}
-  appData.initiativeScores.forEach(s => { initMap[s.teamId] = s.score })
+  ;(appData.initiativeScores || []).forEach(s => { initMap[s.teamId] = s.score })
 
   const rows = appData.teams.map(t => ({
     team: t,

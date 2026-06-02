@@ -54,7 +54,7 @@ function getAssignedSessions(email, level) {
   var rows = getSheet(sheetNames(level).EVALUATORS).getDataRange().getValues();
   for (var i = 1; i < rows.length; i++) {
     if ((rows[i][0] || '').toLowerCase() === email) {
-      return (rows[i][1] || '').split(',')
+      return String(rows[i][1] || '').split(',')
         .map(function(s) { return parseInt(s.trim(), 10); })
         .filter(function(n) { return !isNaN(n); });
     }
@@ -94,7 +94,7 @@ function getAll(email, level) {
     if (evalRows[i][0]) {
       evaluatorAssignments.push({
         email: evalRows[i][0],
-        sessions: (evalRows[i][1] || '').split(',')
+        sessions: String(evalRows[i][1] || '').split(',')
           .map(function(n) { return parseInt(n.trim(), 10); })
           .filter(function(n) { return !isNaN(n); })
       });
