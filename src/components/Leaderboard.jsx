@@ -53,8 +53,9 @@ export default function Leaderboard({ appData, onRefresh }) {
                 const tier = getPrizeTier(r.total)
                 const isTop = r.total > 0 && r.total === maxTotal &&
                   rows.filter(x => x.total === maxTotal).length === 1
+                const rankClass = ['rank-1', 'rank-2', 'rank-3'][idx] ?? ''
                 return (
-                  <tr key={r.team.id}>
+                  <tr key={r.team.id} className={rankClass}>
                     <td className="rank">{idx + 1}</td>
                     <td className="team-name">
                       {r.team.name}
@@ -70,12 +71,12 @@ export default function Leaderboard({ appData, onRefresh }) {
             </tbody>
           </table>
         </div>
-        <div style={{marginTop:'20px', fontSize:'0.8rem', color:'var(--muted)'}}>
-          <strong>Escala de premios:</strong>
-          <span className="tier-badge tier-mayor" style={{margin:'0 6px'}}>Premio Mayor 900–1000</span>
-          <span className="tier-badge tier-medio" style={{margin:'0 6px'}}>Premio Medio 700–899</span>
-          <span className="tier-badge tier-menor" style={{margin:'0 6px'}}>Premio Menor 400–699</span>
-          &nbsp;★ = Premio Especial (puntaje más alto)
+        <div className="prize-legend">
+          <span className="legend-label">Escala de premios:</span>
+          <span className="tier-badge tier-mayor">Premio Mayor 900–1000</span>
+          <span className="tier-badge tier-medio">Premio Medio 700–899</span>
+          <span className="tier-badge tier-menor">Premio Menor 400–699</span>
+          <span className="legend-special">★ Premio Especial (puntaje más alto)</span>
         </div>
       </div>
     </div>

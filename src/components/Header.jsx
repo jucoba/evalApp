@@ -12,7 +12,8 @@ export default function Header({
       <div className="header-inner">
         <div className="logo-section">
           <TrascendLogo height={30} />
-          <h1>🏆 Academias Ágiles</h1>
+          <span className="logo-divider" />
+          <h1>Academias Ágiles</h1>
         </div>
         <div className="level-switcher">
           {['intermedio', 'avanzado'].map(lvl => (

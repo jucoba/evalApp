@@ -46,6 +46,13 @@ h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 12px; }
   align-items: center;
   gap: 12px;
 }
+.logo-divider {
+  display: inline-block;
+  width: 1px;
+  height: 22px;
+  background: var(--border);
+  border-radius: 1px;
+}
 .trascend-logo {
   height: 32px;
   width: auto;
@@ -96,6 +103,37 @@ h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 12px; }
 .login-card p { color: var(--muted); margin-bottom: 28px; font-size: 0.9rem; }
 #sign-in-btn-container { display: flex; justify-content: center; }
 
+/* ─── Loading overlay ────────────────────────────────────────────────────────── */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: rgba(248, 249, 250, 0.75);
+  backdrop-filter: blur(2px);
+  pointer-events: none;
+}
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+.loading-text {
+  font-size: 0.875rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* ─── Flash message ──────────────────────────────────────────────────────────── */
 #flash-msg {
   display: none;
@@ -137,8 +175,35 @@ tr:hover td { background: #f8f9fa; }
 .tier-mayor { background: #fff8e1; color: #f57f17; border: 1px solid var(--mayor); }
 .tier-medio { background: #eceff1; color: #455a64; border: 1px solid var(--medio); }
 .tier-menor { background: #efebe9; color: #5d4037; border: 1px solid var(--menor); }
-.tier-none  { background: #f5f5f5; color: #757575; border: 1px solid var(--none-tier); }
+.tier-none  { background: transparent; color: var(--muted); border: none; font-weight: 400; }
 .special-badge { color: var(--special); font-size: 1rem; }
+
+/* ─── Rank row highlights ────────────────────────────────────────────────────── */
+tr.rank-1 td { background: #fffde7; }
+tr.rank-2 td { background: #f5f5f5; }
+tr.rank-3 td { background: #fbe9e7; }
+tr.rank-1:hover td { background: #fff9c4; }
+tr.rank-2:hover td { background: #eeeeee; }
+tr.rank-3:hover td { background: #ffccbc; }
+tr.rank-1 .rank { color: #f9a825; font-size: 1rem; }
+tr.rank-2 .rank { color: #78909c; font-size: 1rem; }
+tr.rank-3 .rank { color: #8d6e63; font-size: 1rem; }
+
+/* ─── Prize legend ───────────────────────────────────────────────────────────── */
+.prize-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 10px 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.8rem;
+}
+.legend-label { font-weight: 600; color: var(--muted); margin-right: 4px; }
+.legend-special { color: var(--muted); white-space: nowrap; }
 
 /* ─── Score entry ────────────────────────────────────────────────────────────── */
 .session-selector { margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
@@ -175,10 +240,16 @@ tr:hover td { background: #f8f9fa; }
 /* ─── Inputs ─────────────────────────────────────────────────────────────────── */
 input[type="number"], input[type="email"], input[type="text"], select {
   padding: 7px 10px;
-  border: 1px solid var(--border);
+  border: 1px solid #bdbdbd;
   border-radius: 6px;
   font-size: 0.875rem;
   background: var(--card);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+input[type="number"]:focus, input[type="email"]:focus, input[type="text"]:focus, select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.12);
 }
 input[type="number"] { width: 80px; }
 input[type="email"], input[type="text"] { min-width: 200px; }
@@ -210,6 +281,7 @@ input[type="email"], input[type="text"] { min-width: 200px; }
 .btn-danger { background: #fce8e6; color: var(--danger); border: 1px solid #f4c7c3; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
 .btn-danger:hover { background: #f4c7c3; }
 .btn-sm { padding: 4px 10px; font-size: 0.8rem; }
+.btn-save-row { min-width: 96px; text-align: center; }
 .btn-saved { background: var(--success) !important; }
 
 /* ─── Admin tabs ─────────────────────────────────────────────────────────────── */

@@ -7,6 +7,15 @@ import Admin from './components/Admin'
 import { callApi } from './api'
 import './style.css'
 
+function LoadingOverlay() {
+  return (
+    <div className="loading-overlay">
+      <div className="loading-spinner" />
+      <span className="loading-text">Cargando...</span>
+    </div>
+  )
+}
+
 export default function App() {
   const [currentUser, setCurrentUser] = useState(() => {
     const saved = sessionStorage.getItem('user')
@@ -18,18 +27,20 @@ export default function App() {
   )
   const [currentView, setCurrentView] = useState('leaderboard')
   const [flashMsg, setFlashMsg] = useState('')
+  const [loading, setLoading] = useState(!!currentUser)
 
   // Keep refs fresh for the auto-refresh interval closure
   const stateRef = useRef({ currentUser, currentLevel, currentView })
   useEffect(() => { stateRef.current = { currentUser, currentLevel, currentView } })
 
-  const fetchAll = useCallback((user, level) =>
-    callApi({ action: 'getAll' }, user, level).then(data => {
+  const fetchAll = useCallback((user, level) => {
+    setLoading(true)
+    return callApi({ action: 'getAll' }, user, level).then(data => {
       if (data.error) return data
       setAppData(data)
       return data
-    })
-  , [])
+    }).finally(() => setLoading(false))
+  }, [])
 
   const api = useCallback(
     (params) => callApi(params, currentUser, currentLevel),
@@ -107,6 +118,7 @@ export default function App() {
           <div id="flash-msg" style={{display:''}}>{flashMsg}</div>
         </div>
       )}
+      {loading && <LoadingOverlay />}
       {currentView === 'leaderboard' && (
         <Leaderboard
           appData={appData}
