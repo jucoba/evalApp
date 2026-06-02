@@ -1,14 +1,14 @@
 /* ─── Variables ─────────────────────────────────────────────────────────────── */
 :root {
-  --primary: #1a73e8;
-  --primary-dark: #1558b0;
+  --primary: #0056b3;
+  --primary-dark: #004494;
   --danger: #d93025;
   --success: #34a853;
-  --bg: #f1f3f4;
+  --bg: #f8f9fa;
   --card: #ffffff;
-  --border: #dadce0;
-  --text: #202124;
-  --muted: #5f6368;
+  --border: #e0e0e0;
+  --text: #1a1a1a;
+  --muted: #6c757d;
   --mayor: #f9a825;
   --medio: #78909c;
   --menor: #8d6e63;
@@ -41,6 +41,15 @@ h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 12px; }
   max-width: 1100px;
   margin: 0 auto;
 }
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.trascend-logo {
+  height: 32px;
+  width: auto;
+}
 .header-inner h1 { white-space: nowrap; font-size: 1rem; color: var(--primary); }
 #nav-tabs { display: flex; gap: 4px; flex: 1; }
 .tab-btn {
@@ -71,19 +80,20 @@ h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 12px; }
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #e8f0fe 0%, #f1f3f4 100%);
+  background: linear-gradient(160deg, #e8f4fb 0%, #f8f9fa 60%, #eef2f7 100%);
 }
 .login-card {
   background: var(--card);
-  border-radius: var(--radius);
-  padding: 48px 40px;
+  border-radius: 12px;
+  padding: 40px 40px 48px;
   text-align: center;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-  max-width: 360px;
+  box-shadow: 0 4px 24px rgba(13,43,94,0.1);
+  max-width: 380px;
   width: 100%;
 }
-.login-card h2 { font-size: 1.5rem; margin-bottom: 8px; color: var(--primary); }
-.login-card p { color: var(--muted); margin-bottom: 32px; }
+.login-logo { display: flex; justify-content: center; margin-bottom: 20px; }
+.login-card h2 { font-size: 1.4rem; margin-bottom: 6px; color: #0D2B5E; }
+.login-card p { color: var(--muted); margin-bottom: 28px; font-size: 0.9rem; }
 #sign-in-btn-container { display: flex; justify-content: center; }
 
 /* ─── Flash message ──────────────────────────────────────────────────────────── */

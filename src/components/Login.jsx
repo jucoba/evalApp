@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { GOOGLE_CLIENT_ID } from '../config'
+import { TrascendLogoFull } from './TrascendLogo'
 
 export default function Login({ onSignedIn }) {
   const btnRef = useRef(null)
@@ -35,6 +36,9 @@ export default function Login({ onSignedIn }) {
   return (
     <div id="view-login" className="view">
       <div className="login-card">
+        <div className="login-logo">
+          <TrascendLogoFull />
+        </div>
         <h2>🏆 Academias Ágiles</h2>
         <p>Sistema de Recompensas</p>
         <div ref={btnRef} id="sign-in-btn-container"></div>

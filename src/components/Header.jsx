@@ -1,3 +1,5 @@
+import TrascendLogo from './TrascendLogo'
+
 export default function Header({
   currentUser, currentLevel, currentView, userRole,
   onLevelSwitch, onViewSwitch, onSignOut,
@@ -8,7 +10,10 @@ export default function Header({
   return (
     <header id="app-header">
       <div className="header-inner">
-        <h1>🏆 Academias Ágiles</h1>
+        <div className="logo-section">
+          <TrascendLogo height={30} />
+          <h1>🏆 Academias Ágiles</h1>
+        </div>
         <div className="level-switcher">
           {['intermedio', 'avanzado'].map(lvl => (
             <button
