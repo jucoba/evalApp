@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Academias Ágiles — Sistema de Recompensas</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+<!-- ─── Header (hidden until signed in) ──────────────────────────────────────── -->
+<header id="app-header" style="display:none">
+  <div class="header-inner">
+    <h1>🏆 Academias Ágiles</h1>
+    <nav id="nav-tabs">
+      <button class="tab-btn active" data-view="leaderboard">Marcador</button>
+      <button class="tab-btn" id="tab-score" data-view="score-entry" style="display:none">Calificar</button>
+      <button class="tab-btn" id="tab-admin" data-view="admin" style="display:none">Admin</button>
+    </nav>
+    <div class="header-user">
+      <span id="user-name"></span>
+      <button id="sign-out-btn">Salir</button>
+    </div>
+  </div>
+</header>
+
+<!-- ─── Login view ────────────────────────────────────────────────────────────── -->
+<div id="view-login" class="view">
+  <div class="login-card">
+    <h2>🏆 Academias Ágiles</h2>
+    <p>Sistema de Recompensas</p>
+    <div id="sign-in-btn-container"></div>
+  </div>
+</div>
+
+<!-- ─── Leaderboard view ──────────────────────────────────────────────────────── -->
+<div id="view-leaderboard" class="view" style="display:none">
+  <div class="container">
+    <div id="flash-msg"></div>
+    <div class="leaderboard-header">
+      <h2>Marcador General</h2>
+      <span id="leaderboard-updated"></span>
+      <button id="refresh-btn" class="btn-secondary btn-sm">↻ Actualizar</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Equipo</th>
+            <th style="text-align:right">Talleres</th>
+            <th style="text-align:right">Iniciativa</th>
+            <th style="text-align:right">Total</th>
+            <th>Premio</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboard-tbody"></tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:20px;font-size:0.8rem;color:var(--muted)">
+      <strong>Escala de premios:</strong>
+      <span class="tier-badge tier-mayor" style="margin:0 6px">Premio Mayor 900–1000</span>
+      <span class="tier-badge tier-medio" style="margin:0 6px">Premio Medio 700–899</span>
+      <span class="tier-badge tier-menor" style="margin:0 6px">Premio Menor 400–699</span>
+      &nbsp;★ = Premio Especial (puntaje más alto)
+    </div>
+  </div>
+</div>
+
+<!-- ─── Score entry view ──────────────────────────────────────────────────────── -->
+<div id="view-score-entry" class="view" style="display:none">
+  <div class="container">
+    <h2>Calificar Equipos</h2>
+    <div class="session-selector">
+      <label for="session-select">Sesión:</label>
+      <select id="session-select"></select>
+    </div>
+    <div id="score-form-container"></div>
+  </div>
+</div>
+
+<!-- ─── Admin view ────────────────────────────────────────────────────────────── -->
+<div id="view-admin" class="view" style="display:none">
+  <div class="container">
+    <h2>Panel de Administración</h2>
+    <div class="admin-tabs">
+      <button class="admin-tab-btn active" data-admin-tab="teams">Equipos</button>
+      <button class="admin-tab-btn" data-admin-tab="evaluators">Evaluadores</button>
+      <button class="admin-tab-btn" data-admin-tab="scores">Calificaciones</button>
+    </div>
+
+    <!-- Teams tab -->
+    <div id="admin-teams" class="admin-tab-content">
+      <div class="form-card">
+        <h3 id="team-form-title">Nuevo Equipo</h3>
+        <div class="form-row">
+          <input type="text" id="team-name" placeholder="Nombre del equipo" maxlength="60">
+          <input type="number" id="team-size" min="1" max="30" placeholder="# integrantes" style="width:130px">
+          <button id="save-team-btn" class="btn-primary">Guardar</button>
+          <button id="cancel-team-btn" class="btn-secondary" style="display:none">Cancelar</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Equipo</th><th>Integrantes</th><th>Acciones</th></tr></thead>
+          <tbody id="teams-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Evaluators tab -->
+    <div id="admin-evaluators" class="admin-tab-content" style="display:none">
+      <div class="form-card">
+        <h3>Asignar Evaluador</h3>
+        <div class="form-row">
+          <input type="email" id="evaluator-email" placeholder="correo@ejemplo.com">
+        </div>
+        <div class="sessions-checkboxes" id="session-checkboxes"></div>
+        <button id="save-evaluator-btn" class="btn-primary" style="margin-top:10px">Guardar asignación</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Correo</th><th>Sesiones asignadas</th><th>Acciones</th></tr></thead>
+          <tbody id="evaluators-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Scores tab -->
+    <div id="admin-scores" class="admin-tab-content" style="display:none">
+      <div id="scores-grid-container"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="js/config.js"></script>
+<script src="js/scoring.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
