@@ -284,6 +284,29 @@ input[type="email"], input[type="text"] { min-width: 200px; }
 .btn-save-row { min-width: 96px; text-align: center; }
 .btn-saved { background: var(--success) !important; }
 
+/* ─── Indicators ─────────────────────────────────────────────────────────────── */
+.indicators-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 24px;
+}
+.chart-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 20px 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.chart-card h2 { margin-bottom: 4px; }
+.chart-subtitle {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+@media (max-width: 640px) {
+  .indicators-grid { grid-template-columns: 1fr; }
+}
+
 /* ─── Admin tabs ─────────────────────────────────────────────────────────────── */
 .admin-tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
 .admin-tab-btn {

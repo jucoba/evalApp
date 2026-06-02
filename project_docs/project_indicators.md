@@ -1,14 +1,16 @@
 # Indicadores de Progreso de Iniciativas
 
-## 1. Puntuación de Iniciativas por Taller
+## 1. Puntuación de Equipos por Taller
 
-**Descripción:** Evaluación periódica del desempeño de cada iniciativa en los talleres del programa.
+**Descripción:** Evaluación periódica del desempeño de cada equipo en los talleres del programa.
 
 **Método de medición:**
-- Datos extraídos de archivo Excel
-- Frecuencia: Periódica (definir periodicidad específica)
+- Datos ingresados por los evaluadores
+- Frecuencia: Cada que un evaluador agrega la nota de un equipo
 
-**Fórmula:** [Definir escala de puntuación y criterios de evaluación]
+**Fórmula:** Por cada taller se muestra la nota dada por el evaluadore para cada equipo.
+
+**Reporte** Una gráfica que muestre la nota de cada equipo por taller.
 
 ---
 
@@ -17,13 +19,14 @@
 **Descripción:** Medición del cumplimiento puntual de los entregables del proyecto por parte de los equipos participantes.
 
 **Método de medición:**
-- Plataforma: Google Classroom
-- Seguimiento de fechas de entrega vs. fechas límite establecidas
+- Por cada taller, set toma los datos de los equipos que entregaron a tiempo (Dias de retraso = 0)
+
 
 **Fórmula:**
 ```
 % Cumplimiento = (Equipos que entregan a tiempo / Total de equipos) × 100
 ```
+**Reporte** Una gráfica que muestre el % de equipos que entregan a tiempo por taller. Con una línea de tendencia que muestre el progreso o retroceso
 
 ---
 

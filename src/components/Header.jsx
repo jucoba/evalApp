@@ -31,6 +31,10 @@ export default function Header({
             className={`tab-btn${currentView === 'leaderboard' ? ' active' : ''}`}
             onClick={() => onViewSwitch('leaderboard')}
           >Marcador</button>
+          <button
+            className={`tab-btn${currentView === 'indicators' ? ' active' : ''}`}
+            onClick={() => onViewSwitch('indicators')}
+          >Indicadores</button>
           {isEvaluator && (
             <button
               className={`tab-btn${currentView === 'score-entry' ? ' active' : ''}`}

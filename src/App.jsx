@@ -4,6 +4,7 @@ import Login from './components/Login'
 import Leaderboard from './components/Leaderboard'
 import ScoreEntry from './components/ScoreEntry'
 import Admin from './components/Admin'
+import Indicators from './components/Indicators'
 import { callApi } from './api'
 import './style.css'
 
@@ -119,6 +120,9 @@ export default function App() {
         </div>
       )}
       {loading && <LoadingOverlay />}
+      {currentView === 'indicators' && (
+        <Indicators appData={appData} />
+      )}
       {currentView === 'leaderboard' && (
         <Leaderboard
           appData={appData}
