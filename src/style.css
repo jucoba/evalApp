@@ -223,6 +223,22 @@ input[type="email"], input[type="text"] { min-width: 200px; }
 .check-label input { cursor: pointer; }
 .check-label:has(input:checked) { background: #e8f0fe; border-color: var(--primary); color: var(--primary); }
 
+/* ─── Level switcher ─────────────────────────────────────────────────────────── */
+.level-switcher { display: flex; gap: 4px; }
+.level-btn {
+  padding: 5px 14px;
+  border: 1px solid var(--border);
+  background: transparent;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.level-btn:hover { background: var(--bg); color: var(--text); }
+.level-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
 /* ─── Responsive ─────────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .header-inner { gap: 12px; padding: 0 12px; }

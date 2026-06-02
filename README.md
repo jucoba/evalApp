@@ -1,8 +1,8 @@
 # Academias Ágiles — Sistema de Recompensas
 
-Single-page app for workshop team scoring. Frontend on GitHub Pages, data in Google Sheets via Apps Script.
+Single-page app for workshop team scoring. React frontend on GitHub Pages, data in Google Sheets via Apps Script. Supports two independent competition levels: **Intermedio** and **Avanzado**.
 
-## Setup (one-time, ~20 min)
+## Setup (one-time, ~25 min)
 
 ### 1. Create the Google Spreadsheet
 
@@ -17,13 +17,15 @@ Single-page app for workshop team scoring. Frontend on GitHub Pages, data in Goo
 4. In `Code.gs`, replace:
    - `YOUR_SPREADSHEET_ID` with your spreadsheet ID
    - `admin@example.com` with the admin's Google account email
-5. Run the `setupSpreadsheet` function once (Run → Run function → `setupSpreadsheet`) — this creates the 4 required sheets with headers
+5. Run the `setupSpreadsheet` function once (Run → Run function → `setupSpreadsheet`) — this creates the **8 required sheets** (4 per level: Teams, WorkshopScores, InitiativeScores, EvaluatorAssignments, each prefixed `Intermedio_` or `Avanzado_`)
 6. Deploy as web app:
    - Click **Deploy → New deployment**
    - Type: **Web app**
    - Execute as: **Me**
    - Who has access: **Anyone**
    - Click **Deploy** and copy the web app URL
+
+> **Important:** Every time you modify `Code.gs`, create a **new deployment** (not a redeployment of the existing version) and update `API_URL` in `src/config.js`.
 
 ### 3. Create Google OAuth credentials
 
@@ -34,40 +36,65 @@ Single-page app for workshop team scoring. Frontend on GitHub Pages, data in Goo
 5. Application type: **Web application**
 6. Add **Authorized JavaScript origins**:
    - `https://YOUR_USERNAME.github.io` (your GitHub Pages URL)
-   - `http://localhost:8080` (for local testing)
+   - `http://localhost:5173` (Vite dev server)
 7. Copy the **Client ID**
 
 ### 4. Configure the app
 
-Edit `js/config.js`:
+Edit `src/config.js`:
 
 ```js
-const API_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
-const GOOGLE_CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com';
-const ADMIN_EMAIL = 'admin@example.com';
+export const API_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec'
+export const GOOGLE_CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com'
+export const ADMIN_EMAIL = 'admin@example.com'
 ```
 
-### 5. Deploy to GitHub Pages
+### 5. Build and deploy to GitHub Pages
 
-1. Push the project to a GitHub repository
-2. Go to repository **Settings → Pages**
-3. Source: **Deploy from branch → main → / (root)**
-4. Your app will be live at `https://YOUR_USERNAME.github.io/REPO_NAME`
+```bash
+npm install
+npm run build   # outputs to dist/
+```
+
+For GitHub Pages with a subpath (e.g. `github.io/evalApp`), uncomment and set `base` in `vite.config.js` before building:
+
+```js
+base: '/evalApp/',
+```
+
+Then push `dist/` to GitHub Pages (or use the [vite-plugin-gh-pages](https://github.com/nicksrandall/vite-plugin-gh-pages) workflow).
+
+---
+
+## Local development
+
+```bash
+npm install
+npm run dev     # → http://localhost:5173
+```
 
 ---
 
 ## Using the app
 
+### Levels
+
+The header shows **Intermedio** and **Avanzado** switcher buttons. Teams, evaluator assignments, and scores are fully independent between levels. Facilitators can be assigned to sessions in both levels simultaneously.
+
 ### Admin
+
 - Sign in with the configured admin Google account
+- Select the level (Intermedio / Avanzado) in the header
 - Go to **Admin → Equipos** to create teams (name + number of members)
 - Go to **Admin → Evaluadores** to assign evaluators:
   - Enter their Google account email
   - Select which workshop sessions (1–9) and/or Initiative they will score
-  - Each evaluator scores **all teams** for their assigned sessions
+  - Each evaluator scores **all teams** for their assigned sessions within that level
 
 ### Evaluators
+
 - Sign in with their Google account
+- Select their level in the header
 - Go to **Calificar**, select their session
 - For each team, enter:
   - Number of attendees
@@ -76,8 +103,10 @@ const ADMIN_EMAIL = 'admin@example.com';
 - The app shows a live point preview and saves per team
 
 ### Leaderboard
+
 - Auto-refreshes every 60 seconds
 - Shows total workshop points, initiative score, grand total, and prize tier
+- Scoped to the currently selected level
 
 ---
 
@@ -101,14 +130,3 @@ const ADMIN_EMAIL = 'admin@example.com';
 | Sin Premio | 0–399 |
 
 Team with the highest score receives a special prize (★).
-
----
-
-## Local testing
-
-```bash
-npx serve .
-# Open http://localhost:3000
-```
-
-Make sure `http://localhost:3000` (or the port shown) is listed in your OAuth authorized origins.

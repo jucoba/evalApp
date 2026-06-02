@@ -1,32 +1,36 @@
 // ─── Configuration ────────────────────────────────────────────────────────────
 // Paste your Google Spreadsheet ID here (from the URL: /d/SPREADSHEET_ID/edit)
-var SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID';
-var ADMIN_EMAIL = 'admin@example.com'; // must match config.js
+var SPREADSHEET_ID = '12ORP-RHor9V09sumNbcbn4T26hIfOYSAdGM-y9mVFc8';
+var ADMIN_EMAIL = 'jubel_correa@trascend.com'; // must match config.js
 
-var SHEET = {
-  TEAMS: 'Teams',
-  WORKSHOP: 'WorkshopScores',
-  INITIATIVE: 'InitiativeScores',
-  EVALUATORS: 'EvaluatorAssignments'
-};
+function sheetNames(level) {
+  var prefix = level === 'avanzado' ? 'Avanzado' : 'Intermedio';
+  return {
+    TEAMS:      prefix + '_Teams',
+    WORKSHOP:   prefix + '_WorkshopScores',
+    INITIATIVE: prefix + '_InitiativeScores',
+    EVALUATORS: prefix + '_EvaluatorAssignments'
+  };
+}
 
 // ─── Entry point ──────────────────────────────────────────────────────────────
 function doGet(e) {
   var params = e.parameter || {};
   var action = params.action || '';
   var email = (params.email || '').toLowerCase().trim();
+  var level = (params.level === 'avanzado') ? 'avanzado' : 'intermedio';
 
   try {
     var result;
     switch (action) {
-      case 'getAll':              result = getAll(email); break;
-      case 'saveWorkshopScore':   result = saveWorkshopScore(params, email); break;
-      case 'saveInitiativeScore': result = saveInitiativeScore(params, email); break;
-      case 'saveTeam':            result = saveTeam(params, email); break;
-      case 'updateTeam':          result = updateTeam(params, email); break;
-      case 'deleteTeam':          result = deleteTeam(params, email); break;
-      case 'saveEvaluatorAssignment':   result = saveEvaluatorAssignment(params, email); break;
-      case 'deleteEvaluatorAssignment': result = deleteEvaluatorAssignment(params, email); break;
+      case 'getAll':              result = getAll(email, level); break;
+      case 'saveWorkshopScore':   result = saveWorkshopScore(params, email, level); break;
+      case 'saveInitiativeScore': result = saveInitiativeScore(params, email, level); break;
+      case 'saveTeam':            result = saveTeam(params, email, level); break;
+      case 'updateTeam':          result = updateTeam(params, email, level); break;
+      case 'deleteTeam':          result = deleteTeam(params, email, level); break;
+      case 'saveEvaluatorAssignment':   result = saveEvaluatorAssignment(params, email, level); break;
+      case 'deleteEvaluatorAssignment': result = deleteEvaluatorAssignment(params, email, level); break;
       default: result = { error: 'Unknown action: ' + action };
     }
     return json(result);
@@ -46,8 +50,8 @@ function isAdmin(email) {
   return email === ADMIN_EMAIL.toLowerCase();
 }
 
-function getAssignedSessions(email) {
-  var rows = getSheet(SHEET.EVALUATORS).getDataRange().getValues();
+function getAssignedSessions(email, level) {
+  var rows = getSheet(sheetNames(level).EVALUATORS).getDataRange().getValues();
   for (var i = 1; i < rows.length; i++) {
     if ((rows[i][0] || '').toLowerCase() === email) {
       return (rows[i][1] || '').split(',')
@@ -58,39 +62,40 @@ function getAssignedSessions(email) {
   return [];
 }
 
-function canScoreSession(email, session) {
+function canScoreSession(email, session, level) {
   if (isAdmin(email)) return true;
-  return getAssignedSessions(email).indexOf(parseInt(session, 10)) !== -1;
+  return getAssignedSessions(email, level).indexOf(parseInt(session, 10)) !== -1;
 }
 
-function getUserRole(email) {
+function getUserRole(email, level) {
   if (!email) return 'none';
   if (isAdmin(email)) return 'admin';
-  var sessions = getAssignedSessions(email);
+  var sessions = getAssignedSessions(email, level);
   return sessions.length > 0 ? 'evaluator' : 'none';
 }
 
 // ─── getAll ───────────────────────────────────────────────────────────────────
-function getAll(email) {
+function getAll(email, level) {
   var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var s = sheetNames(level);
 
-  var teams = sheetToObjects(ss.getSheetByName(SHEET.TEAMS),
+  var teams = sheetToObjects(ss.getSheetByName(s.TEAMS),
     ['id', 'name', 'memberCount', 'createdAt']);
 
-  var workshopScores = sheetToObjects(ss.getSheetByName(SHEET.WORKSHOP),
+  var workshopScores = sheetToObjects(ss.getSheetByName(s.WORKSHOP),
     ['teamId', 'session', 'attendees', 'grade', 'daysLate', 'total', 'submittedBy', 'submittedAt']);
 
-  var initiativeScores = sheetToObjects(ss.getSheetByName(SHEET.INITIATIVE),
+  var initiativeScores = sheetToObjects(ss.getSheetByName(s.INITIATIVE),
     ['teamId', 'score', 'submittedBy', 'submittedAt']);
 
-  var evalRows = ss.getSheetByName(SHEET.EVALUATORS).getDataRange().getValues();
+  var evalRows = ss.getSheetByName(s.EVALUATORS).getDataRange().getValues();
   var evaluatorAssignments = [];
   for (var i = 1; i < evalRows.length; i++) {
     if (evalRows[i][0]) {
       evaluatorAssignments.push({
         email: evalRows[i][0],
         sessions: (evalRows[i][1] || '').split(',')
-          .map(function(s) { return parseInt(s.trim(), 10); })
+          .map(function(n) { return parseInt(n.trim(), 10); })
           .filter(function(n) { return !isNaN(n); })
       });
     }
@@ -101,23 +106,23 @@ function getAll(email) {
     return { id: t.id, name: t.name, memberCount: parseInt(t.memberCount, 10) || 0 };
   });
 
-  workshopScores = workshopScores.map(function(s) {
+  workshopScores = workshopScores.map(function(ws) {
     return {
-      teamId: s.teamId,
-      session: parseInt(s.session, 10),
-      attendees: parseFloat(s.attendees) || 0,
-      grade: parseInt(s.grade, 10) || 0,
-      daysLate: parseInt(s.daysLate, 10) || 0,
-      total: parseInt(s.total, 10) || 0,
-      submittedBy: s.submittedBy
+      teamId: ws.teamId,
+      session: parseInt(ws.session, 10),
+      attendees: parseFloat(ws.attendees) || 0,
+      grade: parseInt(ws.grade, 10) || 0,
+      daysLate: parseInt(ws.daysLate, 10) || 0,
+      total: parseInt(ws.total, 10) || 0,
+      submittedBy: ws.submittedBy
     };
   });
 
-  initiativeScores = initiativeScores.map(function(s) {
+  initiativeScores = initiativeScores.map(function(is) {
     return {
-      teamId: s.teamId,
-      score: parseInt(s.score, 10) || 0,
-      submittedBy: s.submittedBy
+      teamId: is.teamId,
+      score: parseInt(is.score, 10) || 0,
+      submittedBy: is.submittedBy
     };
   });
 
@@ -126,17 +131,17 @@ function getAll(email) {
     workshopScores: workshopScores,
     initiativeScores: initiativeScores,
     evaluatorAssignments: evaluatorAssignments,
-    userRole: getUserRole(email),
-    assignedSessions: isAdmin(email) ? range(1, 10) : getAssignedSessions(email)
+    userRole: getUserRole(email, level),
+    assignedSessions: isAdmin(email) ? range(1, 10) : getAssignedSessions(email, level)
   };
 }
 
 // ─── Score operations ─────────────────────────────────────────────────────────
-function saveWorkshopScore(params, email) {
+function saveWorkshopScore(params, email, level) {
   var session = parseInt(params.session, 10);
-  if (!canScoreSession(email, session)) return { error: 'No autorizado para esta sesión' };
+  if (!canScoreSession(email, session, level)) return { error: 'No autorizado para esta sesión' };
 
-  var sheet = getSheet(SHEET.WORKSHOP);
+  var sheet = getSheet(sheetNames(level).WORKSHOP);
   var rows = sheet.getDataRange().getValues();
   var teamId = params.teamId;
   var rowIdx = -1;
@@ -168,10 +173,10 @@ function saveWorkshopScore(params, email) {
   return { ok: true };
 }
 
-function saveInitiativeScore(params, email) {
-  if (!canScoreSession(email, 10)) return { error: 'No autorizado para iniciativa' };
+function saveInitiativeScore(params, email, level) {
+  if (!canScoreSession(email, 10, level)) return { error: 'No autorizado para iniciativa' };
 
-  var sheet = getSheet(SHEET.INITIATIVE);
+  var sheet = getSheet(sheetNames(level).INITIATIVE);
   var rows = sheet.getDataRange().getValues();
   var teamId = params.teamId;
   var rowIdx = -1;
@@ -192,17 +197,17 @@ function saveInitiativeScore(params, email) {
 }
 
 // ─── Team operations ──────────────────────────────────────────────────────────
-function saveTeam(params, email) {
+function saveTeam(params, email, level) {
   if (!isAdmin(email)) return { error: 'Solo administradores' };
-  var sheet = getSheet(SHEET.TEAMS);
+  var sheet = getSheet(sheetNames(level).TEAMS);
   var id = Utilities.getUuid();
   sheet.appendRow([id, params.name, parseInt(params.memberCount, 10) || 1, new Date().toISOString()]);
   return { ok: true, id: id };
 }
 
-function updateTeam(params, email) {
+function updateTeam(params, email, level) {
   if (!isAdmin(email)) return { error: 'Solo administradores' };
-  var sheet = getSheet(SHEET.TEAMS);
+  var sheet = getSheet(sheetNames(level).TEAMS);
   var rows = sheet.getDataRange().getValues();
   for (var i = 1; i < rows.length; i++) {
     if (rows[i][0] === params.teamId) {
@@ -213,18 +218,19 @@ function updateTeam(params, email) {
   return { error: 'Equipo no encontrado' };
 }
 
-function deleteTeam(params, email) {
+function deleteTeam(params, email, level) {
   if (!isAdmin(email)) return { error: 'Solo administradores' };
-  deleteRowById(SHEET.TEAMS, params.teamId, 0);
-  deleteRowsByTeam(SHEET.WORKSHOP, params.teamId);
-  deleteRowsByTeam(SHEET.INITIATIVE, params.teamId);
+  var s = sheetNames(level);
+  deleteRowById(s.TEAMS, params.teamId, 0);
+  deleteRowsByTeam(s.WORKSHOP, params.teamId);
+  deleteRowsByTeam(s.INITIATIVE, params.teamId);
   return { ok: true };
 }
 
 // ─── Evaluator assignment operations ─────────────────────────────────────────
-function saveEvaluatorAssignment(params, email) {
+function saveEvaluatorAssignment(params, email, level) {
   if (!isAdmin(email)) return { error: 'Solo administradores' };
-  var sheet = getSheet(SHEET.EVALUATORS);
+  var sheet = getSheet(sheetNames(level).EVALUATORS);
   var rows = sheet.getDataRange().getValues();
   var targetEmail = (params.targetEmail || '').toLowerCase();
   var sessions = params.sessions || '';
@@ -240,9 +246,9 @@ function saveEvaluatorAssignment(params, email) {
   return { ok: true };
 }
 
-function deleteEvaluatorAssignment(params, email) {
+function deleteEvaluatorAssignment(params, email, level) {
   if (!isAdmin(email)) return { error: 'Solo administradores' };
-  var sheet = getSheet(SHEET.EVALUATORS);
+  var sheet = getSheet(sheetNames(level).EVALUATORS);
   var rows = sheet.getDataRange().getValues();
   var targetEmail = (params.targetEmail || '').toLowerCase();
   for (var i = rows.length - 1; i >= 1; i--) {
@@ -297,24 +303,27 @@ function range(start, end) {
   return arr;
 }
 
-// ─── One-time setup: creates sheets with headers ──────────────────────────────
+// ─── One-time setup: creates sheets for both levels ───────────────────────────
 function setupSpreadsheet() {
   var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  var sheets = {
-    Teams: ['TeamID', 'Name', 'MemberCount', 'CreatedAt'],
-    WorkshopScores: ['TeamID', 'Session', 'AttendeeCount', 'ChallengeGrade', 'DaysLate', 'CalculatedTotal', 'SubmittedBy', 'SubmittedAt'],
-    InitiativeScores: ['TeamID', 'Score', 'SubmittedBy', 'SubmittedAt'],
+  var headers = {
+    Teams:                ['TeamID', 'Name', 'MemberCount', 'CreatedAt'],
+    WorkshopScores:       ['TeamID', 'Session', 'AttendeeCount', 'ChallengeGrade', 'DaysLate', 'CalculatedTotal', 'SubmittedBy', 'SubmittedAt'],
+    InitiativeScores:     ['TeamID', 'Score', 'SubmittedBy', 'SubmittedAt'],
     EvaluatorAssignments: ['Email', 'Sessions']
   };
+  var levels = ['Intermedio', 'Avanzado'];
 
-  Object.keys(sheets).forEach(function(name) {
-    var sheet = ss.getSheetByName(name);
-    if (!sheet) {
-      sheet = ss.insertSheet(name);
-    }
-    sheet.getRange(1, 1, 1, sheets[name].length).setValues([sheets[name]]);
-    sheet.getRange(1, 1, 1, sheets[name].length).setFontWeight('bold');
+  levels.forEach(function(lvl) {
+    Object.keys(headers).forEach(function(base) {
+      var name = lvl + '_' + base;
+      var sheet = ss.getSheetByName(name);
+      if (!sheet) sheet = ss.insertSheet(name);
+      var cols = headers[base];
+      sheet.getRange(1, 1, 1, cols.length).setValues([cols]);
+      sheet.getRange(1, 1, 1, cols.length).setFontWeight('bold');
+    });
   });
 
-  Logger.log('Spreadsheet setup complete.');
+  Logger.log('Spreadsheet setup complete: 8 sheets created.');
 }

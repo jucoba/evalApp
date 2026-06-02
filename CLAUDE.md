@@ -6,31 +6,52 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Single-page workshop scoring app for "Academias Ágiles". No build step, no framework, no package manager. Frontend is vanilla JS/HTML/CSS deployed to GitHub Pages. Backend is Google Apps Script (`Code.gs`) deployed as a web app, using Google Sheets as the database.
 
-## Local development
+## Commands
 
 ```bash
-npx serve .
-# Open http://localhost:3000 (or whichever port is shown)
+npm install        # first time only
+npm run dev        # dev server → http://localhost:5173
+npm run build      # production build → dist/
+npm run preview    # preview production build locally
 ```
 
-No install step. No tests. Add `http://localhost:3000` to OAuth authorized origins in Google Cloud Console if testing auth locally.
+Add the dev server URL to OAuth authorized origins in Google Cloud Console. For GitHub Pages subpath deployment, uncomment and set `base` in `vite.config.js`.
 
 ## Configuration
 
-`js/config.js` holds three values that must be set before the app works:
+`src/config.js` holds three values that must be set before the app works:
 - `API_URL` — the deployed Apps Script web app URL
 - `GOOGLE_CLIENT_ID` — OAuth 2.0 client ID (web application type)
 - `ADMIN_EMAIL` — must match `ADMIN_EMAIL` in `Code.gs`
 
 ## Architecture
 
+### Frontend stack
+
+Vite + React 18. No routing library — view state is a string (`'leaderboard' | 'score-entry' | 'admin'`) in `App.jsx`. Old `js/` and `css/` directories are dead code from the pre-React version and can be deleted.
+
+```
+src/
+  App.jsx          top-level state + view routing
+  api.js           fetch wrapper (callApi)
+  config.js        API_URL, GOOGLE_CLIENT_ID, ADMIN_EMAIL, WORKSHOP_COUNT
+  scoring.js       pure scoring math (no DOM)
+  style.css
+  components/
+    Header.jsx     level switcher + nav tabs + user bar
+    Login.jsx      Google Identity Services button
+    Leaderboard.jsx
+    ScoreEntry.jsx  session select → ScoreForm → TeamRow (each row owns its own state)
+    Admin.jsx      TeamsTab, EvaluatorsTab, ScoresTab (all in one file)
+```
+
 ### Request flow
 
-All API calls go through `api()` in `app.js`, which appends `?action=...&email=...&...` to `API_URL` and calls `fetch`. The Apps Script `doGet(e)` dispatches on `action`. Every write action re-authorizes against `email` server-side (admin check or evaluator session assignment check).
+All API calls go through `callApi()` in `src/api.js`, which appends `?action=...&email=...&level=...` to `API_URL` and calls `fetch`. The Apps Script `doGet(e)` dispatches on `action`. Every write action re-authorizes against `email` server-side (admin check or evaluator session assignment check).
 
 ### Frontend state
 
-Single global `appData` object, populated by `loadAll()` → `getAll` action. Contains: `teams`, `workshopScores`, `initiativeScores`, `evaluatorAssignments`, `userRole`, `assignedSessions`. All views read from this cache; saves optimistically update it without a full reload.
+`App.jsx` holds: `currentUser`, `appData`, `currentLevel`, `currentView`. `appData` is the full `getAll` response — all views read from it. Mutations optimistically patch `appData` locally (via `onDataUpdate`) without a full reload.
 
 ### Role model
 
