@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  // For GitHub Pages subpath deployment, set base to your repo name:
-  // base: '/evalApp/',
+  build: {
+    outDir: 'docs',
+  },
+  base: '/evalApp/',
 })
