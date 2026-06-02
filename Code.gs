@@ -1,7 +1,7 @@
 // ─── Configuration ────────────────────────────────────────────────────────────
 // Paste your Google Spreadsheet ID here (from the URL: /d/SPREADSHEET_ID/edit)
 var SPREADSHEET_ID = '12ORP-RHor9V09sumNbcbn4T26hIfOYSAdGM-y9mVFc8';
-var ADMIN_EMAIL = 'jubel_correa@trascendglobal.com'; // must match config.js
+var ADMIN_EMAILS = ['jubel_correa@trascendglobal.com', 'emilio_vadillo@trascendglobal.com']; // must match config.js
 
 function sheetNames(level) {
   var prefix = level === 'avanzado' ? 'Avanzado' : 'Intermedio';
@@ -47,7 +47,7 @@ function json(data) {
 
 // ─── Role helpers ─────────────────────────────────────────────────────────────
 function isAdmin(email) {
-  return email === ADMIN_EMAIL.toLowerCase();
+  return ADMIN_EMAILS.map(function(e) { return e.toLowerCase(); }).indexOf(email) !== -1;
 }
 
 function getAssignedSessions(email, level) {
