@@ -12,6 +12,7 @@ export default function Admin({ appData, api, onReload }) {
   const tabs = [
     { id: 'teams', label: 'Equipos' },
     { id: 'evaluators', label: 'Evaluadores' },
+    { id: 'viewers', label: 'Viewers' },
     { id: 'scores', label: 'Calificaciones' },
   ]
 
@@ -30,6 +31,7 @@ export default function Admin({ appData, api, onReload }) {
         </div>
         {activeTab === 'teams' && <TeamsTab appData={appData} api={api} onReload={onReload} />}
         {activeTab === 'evaluators' && <EvaluatorsTab appData={appData} api={api} onReload={onReload} />}
+        {activeTab === 'viewers' && <ViewersTab appData={appData} api={api} onReload={onReload} />}
         {activeTab === 'scores' && <ScoresTab appData={appData} />}
       </div>
     </div>
@@ -197,8 +199,69 @@ function EvaluatorsTab({ appData, api, onReload }) {
   )
 }
 
+// ─── Viewers ──────────────────────────────────────────────────────────────────
+function ViewersTab({ appData, api, onReload }) {
+  const [email, setEmail] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  async function addViewer() {
+    if (!email.trim()) { alert('Ingresa un correo electrónico'); return }
+    setSaving(true)
+    const res = await api({ action: 'saveViewer', targetEmail: email.trim().toLowerCase() })
+    setSaving(false)
+    if (res.error) { alert(res.error); return }
+    setEmail('')
+    await onReload()
+  }
+
+  async function removeViewer(viewerEmail) {
+    if (!confirm(`¿Eliminar acceso de ${viewerEmail}?`)) return
+    const res = await api({ action: 'deleteViewer', targetEmail: viewerEmail })
+    if (res.error) { alert(res.error); return }
+    await onReload()
+  }
+
+  return (
+    <div className="admin-tab-content">
+      <div className="form-card">
+        <h3>Agregar Viewer</h3>
+        <p style={{marginBottom:'10px', color:'var(--muted)', fontSize:'0.875rem'}}>
+          Viewers pueden ver el marcador, indicadores y tabla de calificaciones.
+        </p>
+        <div className="form-row">
+          <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+            placeholder="correo@ejemplo.com" />
+          <button className="btn-primary" onClick={addViewer} disabled={saving}>
+            Agregar
+          </button>
+        </div>
+      </div>
+      <div className="table-wrap">
+        <table>
+          <thead><tr><th>Correo</th><th>Acciones</th></tr></thead>
+          <tbody>
+            {(appData.viewers || []).length === 0 && (
+              <tr><td colSpan={2} className="empty-msg">Sin viewers configurados.</td></tr>
+            )}
+            {(appData.viewers || []).map(v => (
+              <tr key={v}>
+                <td>{v}</td>
+                <td>
+                  <button className="btn-sm btn-danger" onClick={() => removeViewer(v)}>
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 // ─── Scores matrix ────────────────────────────────────────────────────────────
-function ScoresTab({ appData }) {
+export function ScoresTab({ appData }) {
   const { teams, workshopScores, initiativeScores } = appData
 
   if (teams.length === 0) {

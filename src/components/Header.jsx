@@ -6,6 +6,7 @@ export default function Header({
 }) {
   const isAdmin = userRole === 'admin'
   const isEvaluator = userRole === 'evaluator' || isAdmin
+  const canViewScores = userRole !== 'none'
 
   return (
     <header id="app-header">
@@ -35,6 +36,12 @@ export default function Header({
             className={`tab-btn${currentView === 'indicators' ? ' active' : ''}`}
             onClick={() => onViewSwitch('indicators')}
           >Indicadores</button>
+          {canViewScores && (
+            <button
+              className={`tab-btn${currentView === 'scores' ? ' active' : ''}`}
+              onClick={() => onViewSwitch('scores')}
+            >Calificaciones</button>
+          )}
           {isEvaluator && (
             <button
               className={`tab-btn${currentView === 'score-entry' ? ' active' : ''}`}

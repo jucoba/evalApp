@@ -39,6 +39,17 @@ Single-page app for workshop team scoring. React frontend on GitHub Pages, data 
    - `http://localhost:5173` (Vite dev server)
 7. Copy the **Client ID**
 
+### 3b. Allow external (non-organization) users
+
+By default, Google restricts OAuth apps to users within the same Google Workspace organization (`org_internal`). To allow external Gmail accounts (viewers or evaluators outside your org):
+
+1. Go to **APIs & Services → OAuth consent screen**
+2. Change **User type** from `Internal` → `External`
+3. Set publishing status to **Testing**
+4. Under **Test users**, add every external email that needs access (up to 100)
+
+> External users will see a "Google hasn't verified this app" warning — they must click **Continue** to proceed. This is normal for internal tools in Testing mode.
+
 ### 4. Configure the app
 
 Edit `src/config.js`:

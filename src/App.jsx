@@ -3,7 +3,7 @@ import Header from './components/Header'
 import Login from './components/Login'
 import Leaderboard from './components/Leaderboard'
 import ScoreEntry from './components/ScoreEntry'
-import Admin from './components/Admin'
+import Admin, { ScoresTab } from './components/Admin'
 import Indicators from './components/Indicators'
 import { callApi } from './api'
 import './style.css'
@@ -69,7 +69,7 @@ export default function App() {
     sessionStorage.setItem('user', JSON.stringify(user))
     fetchAll(user, currentLevel).then(data => {
       if (data.userRole === 'none') {
-        setFlashMsg('Tu correo no está asignado a ninguna sesión. Contacta al administrador.')
+        setFlashMsg('Tu correo no tiene acceso configurado. Contacta al administrador.')
         setTimeout(() => setFlashMsg(''), 5000)
       }
     })
@@ -131,6 +131,14 @@ export default function App() {
       )}
       {currentView === 'score-entry' && (
         <ScoreEntry appData={appData} api={api} onDataUpdate={setAppData} />
+      )}
+      {currentView === 'scores' && (
+        <div id="view-scores" className="view">
+          <div className="container">
+            <h2>Calificaciones</h2>
+            <ScoresTab appData={appData} />
+          </div>
+        </div>
       )}
       {currentView === 'admin' && (
         <Admin

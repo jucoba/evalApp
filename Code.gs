@@ -1,6 +1,7 @@
 // ─── Configuration ────────────────────────────────────────────────────────────
 var SPREADSHEET_ID = '12ORP-RHor9V09sumNbcbn4T26hIfOYSAdGM-y9mVFc8';
 var ADMIN_EMAILS = ['jubel_correa@trascendglobal.com', 'emilio_vadillo@trascendglobal.com'];
+var VIEWERS_SHEET = 'Viewers';
 
 function sheetNames(level) {
   var prefix = level === 'avanzado' ? 'Avanzado' : 'Intermedio';
@@ -30,6 +31,8 @@ function doGet(e) {
       case 'deleteTeam':          result = deleteTeam(params, email, level); break;
       case 'saveEvaluatorAssignment':   result = saveEvaluatorAssignment(params, email, level); break;
       case 'deleteEvaluatorAssignment': result = deleteEvaluatorAssignment(params, email, level); break;
+      case 'saveViewer':   result = saveViewer(params, email); break;
+      case 'deleteViewer': result = deleteViewer(params, email); break;
       default: result = { error: 'Unknown action: ' + action };
     }
     return json(result);
@@ -54,6 +57,17 @@ function invalidateCache(level) {
 // ─── Role helpers ─────────────────────────────────────────────────────────────
 function isAdmin(email) {
   return ADMIN_EMAILS.map(function(e) { return e.toLowerCase(); }).indexOf(email) !== -1;
+}
+
+function getViewers(ss) {
+  var sheet = (ss || SpreadsheetApp.openById(SPREADSHEET_ID)).getSheetByName(VIEWERS_SHEET);
+  if (!sheet) return [];
+  var rows = sheet.getDataRange().getValues();
+  var result = [];
+  for (var i = 1; i < rows.length; i++) {
+    if (rows[i][0]) result.push(String(rows[i][0]).toLowerCase().trim());
+  }
+  return result;
 }
 
 function sessionsFromAssignments(evaluatorAssignments, email) {
@@ -90,12 +104,15 @@ function getAll(email, level) {
 
   var teams, workshopScores, initiativeScores, evaluatorAssignments;
 
+  var viewers;
+
   if (cached) {
     var parsed = JSON.parse(cached);
     teams = parsed.teams;
     workshopScores = parsed.workshopScores;
     initiativeScores = parsed.initiativeScores;
     evaluatorAssignments = parsed.evaluatorAssignments;
+    viewers = parsed.viewers || [];
   } else {
     // ONE spreadsheet open for the entire getAll
     var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -139,24 +156,38 @@ function getAll(email, level) {
       }
     }
 
+    viewers = getViewers(ss);
+
     cache.put(getCacheKey(level), JSON.stringify({
       teams: teams,
       workshopScores: workshopScores,
       initiativeScores: initiativeScores,
-      evaluatorAssignments: evaluatorAssignments
+      evaluatorAssignments: evaluatorAssignments,
+      viewers: viewers
     }), 30);
   }
 
-  // Compute user-specific fields from already-loaded evaluatorAssignments — no extra sheet read
+  // Compute user-specific fields — no extra sheet reads
   var assignedSessions = isAdmin(email) ? range(1, 10) : sessionsFromAssignments(evaluatorAssignments, email);
-  var userRole = isAdmin(email) ? 'admin' : (assignedSessions.length > 0 ? 'evaluator' : 'none');
-  if (!email) userRole = 'none';
+  var userRole;
+  if (!email) {
+    userRole = 'none';
+  } else if (isAdmin(email)) {
+    userRole = 'admin';
+  } else if (assignedSessions.length > 0) {
+    userRole = 'evaluator';
+  } else if (viewers.indexOf(email) !== -1) {
+    userRole = 'viewer';
+  } else {
+    userRole = 'none';
+  }
 
   return {
     teams: teams,
     workshopScores: workshopScores,
     initiativeScores: initiativeScores,
     evaluatorAssignments: evaluatorAssignments,
+    viewers: isAdmin(email) ? viewers : undefined,
     userRole: userRole,
     assignedSessions: assignedSessions
   };
@@ -286,6 +317,42 @@ function deleteEvaluatorAssignment(params, email, level) {
   return { ok: true };
 }
 
+// ─── Viewer operations ────────────────────────────────────────────────────────
+function saveViewer(params, email) {
+  if (!isAdmin(email)) return { error: 'Solo administradores' };
+  var targetEmail = (params.targetEmail || '').toLowerCase().trim();
+  if (!targetEmail) return { error: 'Correo inválido' };
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(VIEWERS_SHEET);
+  if (!sheet) sheet = ss.insertSheet(VIEWERS_SHEET);
+  var rows = sheet.getDataRange().getValues();
+  for (var i = 1; i < rows.length; i++) {
+    if ((rows[i][0] || '').toLowerCase() === targetEmail) return { ok: true };
+  }
+  if (rows.length === 1 && !rows[0][0]) {
+    sheet.getRange(1, 1).setValue('Email');
+  }
+  sheet.appendRow([targetEmail]);
+  invalidateCache('intermedio');
+  invalidateCache('avanzado');
+  return { ok: true };
+}
+
+function deleteViewer(params, email) {
+  if (!isAdmin(email)) return { error: 'Solo administradores' };
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(VIEWERS_SHEET);
+  if (!sheet) return { ok: true };
+  var rows = sheet.getDataRange().getValues();
+  var targetEmail = (params.targetEmail || '').toLowerCase();
+  for (var i = rows.length - 1; i >= 1; i--) {
+    if ((rows[i][0] || '').toLowerCase() === targetEmail) sheet.deleteRow(i + 1);
+  }
+  invalidateCache('intermedio');
+  invalidateCache('avanzado');
+  return { ok: true };
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function openSheet(name, ss) {
   var spreadsheet = ss || SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -356,5 +423,10 @@ function setupSpreadsheet() {
     });
   });
 
-  Logger.log('Spreadsheet setup complete: 8 sheets created.');
+  var viewersSheet = ss.getSheetByName(VIEWERS_SHEET);
+  if (!viewersSheet) viewersSheet = ss.insertSheet(VIEWERS_SHEET);
+  viewersSheet.getRange(1, 1).setValue('Email');
+  viewersSheet.getRange(1, 1).setFontWeight('bold');
+
+  Logger.log('Spreadsheet setup complete: 8 level sheets + Viewers sheet created.');
 }
